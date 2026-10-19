@@ -1,0 +1,279 @@
+from flask import Flask, render_template, jsonify, request
+from datetime import datetime
+
+from ai import explain 
+from wazuh_api import get_agents, get_alerts, get_manager_status
+import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+THEHIVE_URL = os.getenv("THEHIVE_URL", "http://192.168.73.134:9000")
+THEHIVE_API_KEY = os.getenv("qDpCi6reklxudbx9VWWdc0iA2pPyOmAU")
+
+app = Flask(__name__)
+
+logs = [
+    {
+        "timestamp":"2026-10-04 10:15:22",
+        "level":"error",
+        "description":"Multiple failed SSH login attempts detected",
+        "ai":"Possible brute-force attack. Block source IP.",
+        "risk":("HIGH","🔴")
+    },
+    {
+        "timestamp":"2026-10-04 10:18:07",
+        "level":"warning",
+        "description":"Suspicious PowerShell execution detected",
+        "ai":"Potential malicious script. Investigate.",
+        "risk":("MEDIUM","🟡")
+    },
+    {
+        "timestamp":"2026-10-04 10:30:33",
+        "level":"info",
+        "description":"Agent heartbeat received",
+        "ai":"System operating normally.",
+        "risk":("LOW","🟢")
+    }
+]
+
+agents = [
+    {
+        "id":"001",
+        "name":"Windows-Test",
+        "ip":"192.168.73.128",
+        "status":"Active",
+        "lastKeepAlive":"2026-10-04 10:30:40"
+    },
+    {
+        "id":"002",
+        "name":"Ubuntu-Agent",
+        "ip":"192.168.73.130",
+        "status":"Active",
+        "lastKeepAlive":"2026-10-04 10:30:35"
+    }
+
+]
+{
+    "timestamp":"2026-10-04 09:45:11",
+    "level":"error",
+    "description":"Brute force SSH attack detected",
+    "ai":"Repeated authentication failures detected.",
+    "risk":("HIGH","🔴")
+},
+{
+    "timestamp":"2026-10-04 09:50:44",
+    "level":"warning",
+    "description":"PowerShell suspicious execution",
+    "ai":"Encoded command execution detected.",
+    "risk":("MEDIUM","🟡")
+},
+{
+    "timestamp":"2026-10-04 09:58:12",
+    "level":"info",
+    "description":"Agent connected successfully",
+    "ai":"Normal operation.",
+    "risk":("LOW","🟢")
+},
+{
+    "timestamp":"2026-10-04 10:01:27",
+    "level":"error",
+    "description":"Malware signature detected",
+    "ai":"Endpoint should be isolated.",
+    "risk":("HIGH","🔴")
+},
+{
+    "timestamp":"2026-10-04 10:05:13",
+    "level":"warning",
+    "description":"Unusual outbound traffic",
+    "ai":"Possible C2 communication.",
+    "risk":("MEDIUM","🟡")
+}
+
+
+
+# =========================
+# Temporary SOC Data
+# (Later replace with Wazuh API)
+# =========================
+
+
+
+
+
+# =========================
+# Dashboard
+# =========================
+@app.route("/", methods=["GET", "POST"])
+def dashboard():
+    
+    critical = len([x for x in logs if x["level"] == "error"])
+    warnings = len([x for x in logs if x["level"] == "warning"])
+
+    status = {
+        "message": "Wazuh Manager Running"
+    }
+
+    answer = ""
+
+    if request.method == "POST":
+        prompt = request.form["prompt"]
+        answer = explain(prompt)
+
+    return render_template(
+        "dashboard.html",
+        logs=logs,
+        agents=agents,
+        critical=critical,
+        warnings=warnings,
+        status=status,
+        answer=answer
+    )
+# =========================
+# Sidebar Pages
+# =========================
+
+@app.route("/logs")
+def live_logs():
+
+    return render_template(
+        "logs.html",
+        logs=logs
+    )
+
+
+
+@app.route("/agents")
+def agent_page():
+
+    return render_template(
+        "agents.html",
+        agents=agents
+    )
+
+
+
+@app.route("/incidents")
+def incidents():
+
+    incident_logs = [
+        log for log in logs
+        if log["level"] in ["error","warning"]
+    ]
+
+    return render_template(
+        "incidents.html",
+        incidents=incident_logs
+    )
+
+
+
+@app.route("/reports")
+def reports():
+
+    return render_template(
+        "reports.html"
+    )
+
+
+
+@app.route("/settings")
+def settings():
+
+    return render_template(
+        "settings.html"
+    )
+
+@app.route("/chat", methods=["GET", "POST"])
+def chat():
+    answer = ""
+
+    if request.method == "POST":
+        prompt = request.form["prompt"]
+        answer = explain(prompt)
+
+    return render_template(
+        "chat.html",
+        answer=answer
+    )
+
+# =========================
+# API Endpoints
+# (For future React/API use)
+# =========================
+
+
+@app.route("/api/logs")
+def api_logs():
+
+    return jsonify(logs)
+
+
+
+@app.route("/api/agents")
+def api_agents():
+
+    return jsonify(agents)
+
+
+
+@app.route("/api/status")
+def api_status():
+
+    return jsonify({
+
+        "server":"running",
+
+        "time":
+        datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+    })
+#===============================
+#live
+#===============================
+
+@app.route("/api/live-alerts")
+def live_alerts():
+    logs = get_alerts()[:10]   # your existing alert function
+
+    return jsonify(logs)
+
+
+
+# =========================
+# Run Server
+# =========================
+
+
+if __name__ == "__main__":
+
+    app.run(
+
+        host="0.0.0.0",
+
+        port=5000,
+
+        debug=True
+
+    )
+#===============================
+#thehive
+#==============================
+@app.route("/thehive")
+def thehive():
+    return render_template("thehive.html")
+
+
+@app.route("/create-case/<int:id>")
+def create_case(id):
+
+    alert = logs[id-1]
+
+    return render_template(
+        "case_created.html",
+        alert=alert
+    )
+

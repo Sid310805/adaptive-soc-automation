@@ -1,0 +1,309 @@
+(venv) sid@sid-VMware-Virtual-Platform:~/adaptive-soc/templates$ cat  dashboard.html 
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Adaptive SOC Dashboard</title> 
+ 
+    <link rel="stylesheet" 
+          href="{{ url_for('static', filename='css/style.css') }}"> 
+</head> 
+ 
+<body> 
+ 
+<div class="container"> 
+ 
+    <!-- Sidebar --> 
+    <div class="sidebar"> 
+ 
+        <h2>🛡 Adaptive SOC</h2> 
+ 
+        <ul> 
+            <ul> 
+		<li>
+			<a href="http://192.168.73.134:9000" target="_blank">
+				🐝 TheHive Cases
+			</a>
+		</li>
+		<li><a href="/">📊 Dashboard</a></li> 
+                <li><a href="/agents">💻 Agents</a></li> 
+                <li><a href="/incidents">🚨 Incidents</a></li> 
+                <li><a href="/reports">📄 Reports</a></li> 
+                <li><a href="/chat">🤖 AI Assistant</a></li> 
+                <li><a href="/settings">⚙️ Settings</a></li> 
+ 
+	    </ul> 
+ 
+        </ul> 
+ 
+    </div> 
+ 
+    <!-- Main Content --> 
+    <div class="main"> 
+ 
+        <div class="top-bar"> 
+ 
+            <div> 
+                <h1>Security Operations Center</h1> 
+                <p style="color:#94a3b8;"> 
+                    AI-Powered Threat Monitoring Dashboard 
+                </p> 
+            </div> 
+ 
+            <div> 
+                <div class="status">🟢 LIVE</div> 
+                <div id="clock"></div> 
+            </div> 
+ 
+        </div> 
+ 
+        <div class="cards"> 
+ 
+            <div class="card total"> 
+                <div class="icon">📄</div> 
+                <h2 class="counter">{{ logs|length }}</h2> 
+                <p>Total Logs</p> 
+            </div> 
+ 
+            <div class="card agent"> 
+                <div class="icon">💻</div> 
+                <h2 class="counter">{{ agents|length }}</h2> 
+                <p>Connected Agents</p> 
+            </div> 
+ 
+            <div class="card critical"> 
+                <div class="icon">🚨</div> 
+                <h2 class="counter">{{ critical }}</h2> 
+                <p>Critical Events</p> 
+            </div> 
+ 
+            <div class="card warning"> 
+                <div class="icon">⚠️</div> 
+                <h2 class="counter">{{ warnings }}</h2> 
+                <p>Warnings</p> 
+            </div> 
+ 
+            <div class="card"> 
+                <div class="icon">⚙️</div> 
+                <h3>Manager Status</h3> 
+                <p>{{ status["message"] }}</p> 
+            </div>
+</div> 
+ 
+         
+        <!-- AI Assistant --> 
+ 
+        <div class="card" style="margin-bottom:20px;"> 
+            <h2>🤖 AI Assistant</h2> 
+ 
+            <form method="POST" autocomplete="off"> 
+                <input 
+                    type="text" 
+                    name="prompt"
+		    autocomplete="off"
+                    placeholder="Doubt? Ask Me !" 
+                    style="width:80%;padding:12px;border-radius:8px;"> 
+ 
+               <button type="submit"> 
+                   search 
+               </button> 
+            </form> 
+ 
+            {% if answer %} 
+            <div id="ai-answer" style="margin-top:15px;">> 
+                <p>{{ answer }}</p> 
+            </div> 
+            {% endif %} 
+        </div> 
+ 
+  <div class="logs-section"> 
+ 
+            <h2>Latest Wazuh Logs</h2> 
+ 
+            <table> 
+ 
+                <thead> 
+                    <tr> 
+                        <th>Timestamp</th> 
+                        <th>Severity</th> 
+                        <th>Description</th> 
+                        <th>AI Analysis</th> 
+                        <th>Risk</th>
+                        <th>Action</th> 
+                    </tr> 
+                </thead> 
+ 
+                <tbody id="logs-body"> 
+ 
+                {% for log in logs %} 
+                <tr> 
+ 
+                    <td>{{ log.timestamp }}</td> 
+ 
+                    <td> 
+                        {% if log.level == "error" %} 
+                        <span style="color:#ef4444;font-weight:bold;"> 
+                            🔴 CRITICAL 
+                        </span> 
+ 
+                        {% elif log.level == "warning" %} 
+                        <span style="color:#f59e0b;font-weight:bold;"> 
+                            🟡 WARNING 
+                        </span> 
+ 
+                        {% else %} 
+                        <span style="color:#22c55e;font-weight:bold;"> 
+                            🟢 INFO 
+                        </span> 
+                        {% endif %} 
+                    </td> 
+ 
+                    <td>{{ log.description }}</td> 
+ 
+                    <td>{{ log.ai }}</td> 
+ 
+                    <td> 
+                        {{ log.risk[1] }} {{ log.risk[0] }} 
+                    </td> 
+                    <td>
+			    <a href="http://192.168.73.134:5000/create-case/{{ loop.index }}"
+                               style="display:inline-block;
+                                      background:#f59e0b;
+                                      color:white;
+                                      padding:8px 12px;
+                                      border-radius:6px;
+                                      text-decoration:none;">
+                                🐝 Create Case
+                            </a>             
+                             <button style="
+                             background:#f59e0b;
+                             color:white;
+                             border:none;
+                             padding:8px 12px;
+                             border-radius:6px;
+                             cursor:pointer;">
+                             🐝 Create Case
+                             </button>
+                         </a>
+
+                </tr> 
+                {% endfor %} 
+ 
+                </tbody> 
+ <div class="card" style="margin-top:20px;">
+    <h2>🖥 Onboard New Endpoint</h2>
+
+    <p><b>Step 1:</b> Install Wazuh Agent</p>
+    <p><b>Step 2:</b> Set Manager IP → 192.168.73.130</p>
+    <p><b>Step 3:</b> Start Agent Service</p>
+    <p><b>Step 4:</b> Verify Agent in Dashboard</p>
+
+    <button style="
+        margin-top:15px;
+        background:#22c55e;
+        color:white;
+        border:none;
+        padding:10px 15px;
+        border-radius:8px;">
+        📥 Download Agent
+    </button>
+</div>
+            </table> 
+ 
+        </div> 
+ 
+    </div> 
+ 
+</div> 
+ 
+<script> 
+function updateClock() { 
+    const now = new Date(); 
+ 
+    document.getElementById("clock").innerHTML = 
+        now.toLocaleDateString() + 
+        "<br>" + 
+        now.toLocaleTimeString(); 
+} 
+ 
+setInterval(updateClock, 1000); 
+
+updateClock(); 
+</script> 
+<h2>🖥 Connected Agents</h2>
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>IP</th>
+<th>Status</th>
+<th/thead>
+
+<tbody>
+{% for agent in agents %}
+<tr>
+<td>{{ agent.id }}</td>
+<td>{{ agent.name }}</td>
+<td>{{ agent.ip }}</td>
+<td>{{ agent.status }}</td>
+<td>{{ agent.lastKeepAlive }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<script>
+async function updateLogs() {
+    try {
+        const response = await fetch('/api/live-alerts');
+
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+
+        const logs = await response.json();
+        const tbody = document.getElementById('logs-body');
+
+        tbody.innerHTML = '';
+
+        logs.forEach((log, index) => {
+            const row = document.createElement('tr');
+
+            const values = [
+                log.timestamp || 'N/A',
+                log.level || 'info',
+                log.description || 'No description',
+                log.ai || 'Analysis unavailable',
+                log.risk || 'LOW'
+            ];
+
+            values.forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+
+            const actionCell = document.createElement('td');
+            const link = document.createElement('a');
+
+            link.href = 'http://192.168.73.134:9000/create-case/' + (log.id || index +1);
+            link.textContent = '🐝 Create Case';
+            link.style.color = '#f59e0b';
+
+            actionCell.appendChild(link);
+            row.appendChild(actionCell);
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Failed to refresh logs:', error);
+    }
+}
+
+updateLogs();
+setInterval(updateLogs, 15000);
+</script>
+</body>
+</html>
+

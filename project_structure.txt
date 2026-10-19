@@ -1,0 +1,43 @@
+.
+├── ai.py
+├── alert.py
+├── app.py
+├── config.py
+├── database.py
+├── models
+├── project_structure.txt
+├── requirements.txt
+├── routes
+│   ├── auth.py
+│   └── dashboard.py
+├── services
+│   ├── shuffle.py
+│   ├── thehive.py
+│   ├── wazhu.py
+│   └── wazuh.py
+├── static
+│   ├── css
+│   │   └── style.css
+│   ├── images
+│   └── js
+├── temo_test.py
+├── templates
+│   ├── agents.html
+│   ├── case_created.html
+│   ├── chat.html
+│   ├── dashboard_backup.html
+│   ├── dashboard.html
+│   ├── layout
+│   │   ├── base.html
+│   │   └── dashboard.html
+│   └── thehive.html
+├── test2.py
+├── test_agents.py
+├── test_ai.py
+├── test_alerts.py
+├── test.py
+├── test_status.py
+├── test_wazuh.py
+└── wazuh_api.py
+
+10 directories, 31 files
